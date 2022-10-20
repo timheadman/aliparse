@@ -1,0 +1,92 @@
+secrets.*
+
+# OSX
+.DS_Store
+dump.rdb
+
+# temp files
+*~
+~$*
+
+.sencha_backup/
+
+# IDE
+.idea/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+.Python
+.venv/
+.env/
+venv/
+env/
+bin/
+# build/
+build/temp/
+develop-eggs/
+# dist/
+eggs/
+# lib/
+lib64/
+parts/
+sdist/
+# var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# C extensions
+*.so
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Django stuff:
+*.log
+*.pot
+
+# Sphinx documentation
+docs/_build/
+media/
+
+# Database files
+*.db
+*.sqlite3
+
+# Excel files
+*.xls
+*.xlsx
+
+# local settings file
+settings/local.py
+
+# Vagrant files
+.ansible/
+.vagrant/
+Vagrantfile
+
+# Celery
+celerybeat-schedule
+
+tmp/*
+
+settings.json
