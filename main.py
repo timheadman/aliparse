@@ -13,10 +13,9 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 
+# import matplotlib.pyplot as plt
+
 def get_price(url):
-    rnd_int = random.randint(2, 10)
-    logging.info(f"Random sleep: {rnd_int} sec...")
-    time.sleep(rnd_int)
     driver.get(url)
     if url != driver.current_url:
         logging.info(
@@ -28,12 +27,13 @@ def get_price(url):
     elements = driver.find_elements(By.CLASS_NAME, "product-price-current")
     if not elements:
         elements = driver.find_elements(
-            By.CLASS_NAME, "Product_UniformBanner__uniformBannerBoxPrice__o5qwb"
+            By.CSS_SELECTOR, "[class*='Product_UniformBanner__uniformBannerBoxPrice__']"
         )
     if not elements:
         elements = driver.find_elements(
-            By.CLASS_NAME, "snow-price_SnowPrice__mainS__ugww0l"
+            By.CSS_SELECTOR, "[class*='snow-price_SnowPrice__mainS__']"
         )
+
     if elements:
         log_ = f"Found {len(elements)} elements: "
         for element in elements:
@@ -48,33 +48,38 @@ def get_price(url):
                 log_ += "none"
     else:
         log_ = "Elements not found ({url})"
+
     logging.info(f'{time.strftime("%d-%m-%Y %H:%M:%S")}: {log_}, url: {url}')
+    rnd_int = random.randint(2, 10)
+    logging.info(f"Random sleep: {rnd_int} sec...")
+    time.sleep(rnd_int)
     return price
 
 
-def print_report_table(db_price, db_sku):
+def print_report_table(db_sku, db_price, price_minmax):
     report_table = PrettyTable()
+    # Сортированное множество уникальных дат
     date_set = sorted(set(db_row[0] for db_row in db_price))
+    # Словарь соответствия sku_id -> name
     name_id_dict = {db_row[0]: db_row[1] for db_row in db_sku}
 
-    for name_id in name_id_dict.keys():
-        price = []
+    for sku_id in name_id_dict.keys():
+        price = [name_id_dict[sku_id]]
         for date_ in date_set:
             price.append(
-                "".join(
-                    [
-                        str(db_row[2])
-                        for db_row in db_price
-                        if db_row[0] == date_ and db_row[3] == name_id
-                    ]
-                )
-            )
-        price.insert(0, name_id_dict[name_id])
+                "".join([str(db_row[1]) for db_row in db_price
+                         if db_row[0] == date_ and db_row[2] == sku_id]))
+        price.append(f'{price_minmax[sku_id][0]}/{price_minmax[sku_id][1]}')
         report_table.add_row(price)
 
     date_set.insert(0, "")
+    date_set.append("MIN/MAX")
     report_table.field_names = date_set
     print(report_table)
+
+
+def wait_command():
+    command = input("Enter the id and number of days: ")
 
 
 if __name__ == "__main__":
@@ -133,17 +138,22 @@ if __name__ == "__main__":
         connection.commit()
         driver.close()
 
-    sql_query = (
-        "SELECT date, name, price, sku_id FROM price "
-        "INNER JOIN sku ON sku.id = price.sku_id "
-        "WHERE date > NOW() - INTERVAL 5 DAY ORDER BY date "
-    )
-    cursor.execute(sql_query)
-    price_data = cursor.fetchall()
     sql_query = "SELECT id, name FROM sku ORDER BY name"
     cursor.execute(sql_query)
     sku_list = cursor.fetchall()
-    print_report_table(price_data, sku_list)
+
+    sql_query = (
+        "SELECT date, price, sku_id FROM price "
+        "WHERE date > NOW() - INTERVAL 5 DAY ORDER BY date"
+    )
+    cursor.execute(sql_query)
+    price_data = cursor.fetchall()
+
+    sql_query = "SELECT sku_id, MIN(price),MAX(price) FROM price GROUP BY sku_id"
+    cursor.execute(sql_query)
+    minmax_dict = {db_row[0]: (db_row[1], db_row[2]) for db_row in cursor.fetchall()}
+    print_report_table(sku_list, price_data, minmax_dict)
+    # wait_command()
 
     cursor.close()
     connection.close()
