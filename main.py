@@ -110,7 +110,7 @@ if __name__ == "__main__":
     cursor = connection.cursor(buffered=True)
 
     sql_query = (
-        "SELECT id, url FROM sku WHERE id NOT IN "
+        "SELECT id, url FROM sku WHERE in_use AND id NOT IN "
         f"(SELECT sku_id FROM price WHERE date = '{today}')"
     )
     cursor.execute(sql_query)
@@ -119,6 +119,7 @@ if __name__ == "__main__":
 
     if len(data):
         options = webdriver.ChromeOptions()
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
         options.binary_location = (
             "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
         )
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         connection.commit()
         driver.close()
 
-    sql_query = "SELECT id, name FROM sku ORDER BY name"
+    sql_query = "SELECT id, name FROM sku WHERE in_use ORDER BY name"
     cursor.execute(sql_query)
     sku_list = cursor.fetchall()
 
