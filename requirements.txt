@@ -1,6 +1,12 @@
+mysql-connector-python==8.0.31
+matplotlib==3.6.1
+prettytable==3.4.1
+
+# Selenium core
 selenium==4.5.0
 webdriver-manager==3.8.4
-mysql-connector-python==8.0.31
-prettytable==3.4.1
 packaging==21.3
-matplotlib==3.6.1
+
+# Code styling
+black==22.3.0
+isort==5.10.1

@@ -3,6 +3,7 @@ import random
 import sys
 import time
 from secrets import *
+import help
 
 import mysql.connector as mariadb
 from mysql.connector import Error
@@ -13,7 +14,9 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 
-# import matplotlib.pyplot as plt
+def make_url(sku_id, shop_id):
+    return 'https://aliexpress.ru/item/' + str(shop_id) + '.html?sku_id=' + str(sku_id)
+
 
 def get_price(url):
     driver.get(url)
@@ -50,9 +53,6 @@ def get_price(url):
         log_ = "Elements not found ({url})"
 
     logging.info(f'{time.strftime("%d-%m-%Y %H:%M:%S")}: {log_}, url: {url}')
-    rnd_int = random.randint(2, 10)
-    logging.info(f"Random sleep: {rnd_int} sec...")
-    time.sleep(rnd_int)
     return price
 
 
@@ -79,7 +79,14 @@ def print_report_table(db_sku, db_price, price_minmax):
 
 
 def wait_command():
-    command = input("Enter the id and number of days: ")
+    while True:
+        command = input("Enter command, help - for help, enter - for exit: ")
+        com_list = command.split()
+        print(com_list)
+        if not len(com_list):
+            exit(0)
+        if com_list[0] == 'help':
+            print(help.help_topic)
 
 
 if __name__ == "__main__":
@@ -110,9 +117,10 @@ if __name__ == "__main__":
     cursor = connection.cursor(buffered=True)
 
     sql_query = (
-        "SELECT id, url FROM sku WHERE in_use AND id NOT IN "
-        f"(SELECT sku_id FROM price WHERE date = '{today}')"
+        "SELECT sku_id, shop_id, pk FROM sku WHERE in_use AND pk NOT IN "
+        f"(SELECT sku_pk FROM price WHERE date = '{today}')"
     )
+
     cursor.execute(sql_query)
     logging.info(f"Recieve {cursor.rowcount} rows.")
     data = cursor.fetchall()
@@ -126,35 +134,41 @@ if __name__ == "__main__":
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options
         )
-
+        row_count = 0
         for row in data:
-            current_price = get_price(row[1])
+            if row_count != 0 and row_count != len(data):
+                rnd_int = random.randint(2, 10)
+                logging.info(f"Random sleep: {rnd_int} sec...")
+                time.sleep(rnd_int)
+            row_count += 1
+            current_price = get_price(make_url(row[0], row[1]))
             if current_price:
                 sql_query = (
-                    "INSERT INTO price (sku_id, date, price) "
-                    f"VALUES ({row[0]}, '{today}', {current_price})"
+                    "INSERT INTO price (sku_pk, date, price) "
+                    f"VALUES ({row[2]}, '{today}', {current_price})"
                 )
                 cursor.execute(sql_query)
 
         connection.commit()
         driver.close()
 
-    sql_query = "SELECT id, name FROM sku WHERE in_use ORDER BY name"
+    sql_query = "SELECT pk, name FROM sku WHERE in_use ORDER BY name"
     cursor.execute(sql_query)
     sku_list = cursor.fetchall()
 
     sql_query = (
-        "SELECT date, price, sku_id FROM price "
+        "SELECT date, price, sku_pk FROM price "
         "WHERE date > NOW() - INTERVAL 5 DAY ORDER BY date"
     )
     cursor.execute(sql_query)
     price_data = cursor.fetchall()
 
-    sql_query = "SELECT sku_id, MIN(price),MAX(price) FROM price GROUP BY sku_id"
+    sql_query = "SELECT sku_pk, MIN(price),MAX(price) FROM price GROUP BY sku_pk"
     cursor.execute(sql_query)
     minmax_dict = {db_row[0]: (db_row[1], db_row[2]) for db_row in cursor.fetchall()}
     print_report_table(sku_list, price_data, minmax_dict)
-    # wait_command()
+    wait_command()
+    # import matplotlib.pyplot as plt
 
     cursor.close()
     connection.close()
