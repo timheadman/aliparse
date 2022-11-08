@@ -83,6 +83,7 @@ def print_report_table(db_sku, db_price, db_minmax, db_exchange):
 
     for sku_id in name_id_dict.keys():
         price = [name_id_dict[sku_id]]
+        # ToDo: Выбрать последние 5 существующих дат, а не 5 начиная с текущей
         for date_ in date_set:
             price.append(
                 "".join(
@@ -191,10 +192,12 @@ if __name__ == "__main__":
         connection.commit()
         driver.close()
 
+    # Создаем набор уникального номера товара и имя товара
     sql_query = "SELECT pk, name FROM sku WHERE in_use ORDER BY name"
     cursor.execute(sql_query)
     sku_data = cursor.fetchall()
 
+    # Создаем таблицу цен за последние 5 дней
     sql_query = (
         "SELECT date, price, sku_pk FROM price "
         "WHERE date > NOW() - INTERVAL 5 DAY ORDER BY date"
@@ -202,10 +205,12 @@ if __name__ == "__main__":
     cursor.execute(sql_query)
     price_data = cursor.fetchall()
 
+    # Создаем словарь с максимальной и минимальной ценой по каждому SKU
     sql_query = "SELECT sku_pk, MIN(price),MAX(price) FROM price GROUP BY sku_pk"
     cursor.execute(sql_query)
     minmax_data = {db_row[0]: (db_row[1], db_row[2]) for db_row in cursor.fetchall()}
 
+    # Создаем таблицу курса USD/RUB за последние 5 дней
     sql_query = f"SELECT date, price FROM exchange WHERE date > NOW() - INTERVAL 5 DAY ORDER BY date"
     cursor.execute(sql_query)
     exchange_data = cursor.fetchall()
