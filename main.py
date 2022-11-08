@@ -3,7 +3,6 @@ import random
 import sys
 import time
 from secrets import *
-import help
 
 import mysql.connector as mariadb
 from mysql.connector import Error
@@ -13,12 +12,14 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+import help
+
 
 def make_url(sku_id, shop_id):
     return 'https://aliexpress.ru/item/' + str(shop_id) + '.html?sku_id=' + str(sku_id)
 
 
-def get_price(url):
+def get_price(url, is_float=False):
     driver.get(url)
     if url != driver.current_url:
         logging.info(
@@ -44,7 +45,17 @@ def get_price(url):
             price_cut = price_text[: price_text.find(",")].replace(" ", "")
             log_ += f"e.text: {element.text}, cut: {price_cut}, int: "
             if price_cut.isdigit():
-                price = int(price_cut)
+                if is_float:
+                    price = round(
+                        float(
+                            price_text[: price_text.find(",") + 3]
+                            .replace(" ", "")
+                            .replace(",", ".")
+                        ),
+                        2,
+                    )
+                else:
+                    price = int(price_cut)
                 log_ += str(price)
                 break
             else:
@@ -56,20 +67,33 @@ def get_price(url):
     return price
 
 
-def print_report_table(db_sku, db_price, price_minmax):
+def print_report_table(db_sku, db_price, db_minmax, db_exchange):
     report_table = PrettyTable()
     # Сортированное множество уникальных дат
     date_set = sorted(set(db_row[0] for db_row in db_price))
     # Словарь соответствия sku_id -> name
     name_id_dict = {db_row[0]: db_row[1] for db_row in db_sku}
+    price = ['*** Exchange USD/RUB ***']
+    for date_ in date_set:
+        price.append(
+            "".join([str(db_row[1]) for db_row in db_exchange if db_row[0] == date_])
+        )
+    price.append('*')
+    report_table.add_row(price)
 
     for sku_id in name_id_dict.keys():
         price = [name_id_dict[sku_id]]
         for date_ in date_set:
             price.append(
-                "".join([str(db_row[1]) for db_row in db_price
-                         if db_row[0] == date_ and db_row[2] == sku_id]))
-        price.append(f'{price_minmax[sku_id][0]}/{price_minmax[sku_id][1]}')
+                "".join(
+                    [
+                        str(db_row[1])
+                        for db_row in db_price
+                        if db_row[0] == date_ and db_row[2] == sku_id
+                    ]
+                )
+            )
+        price.append(f'{db_minmax[sku_id][0]}/{db_minmax[sku_id][1]}')
         report_table.add_row(price)
 
     date_set.insert(0, "")
@@ -110,14 +134,14 @@ if __name__ == "__main__":
     except Error as e:
         logging.error(
             f'{time.strftime("%d-%m-%Y %H:%M:%S")}: '
-            f"Error connecting to MariaDB server: {e}."
+            f'Error connecting to MariaDB server: {e}.'
         )
         sys.exit("Error connecting to MariaDB server.")
 
     cursor = connection.cursor(buffered=True)
 
     sql_query = (
-        "SELECT sku_id, shop_id, pk FROM sku WHERE in_use AND pk NOT IN "
+        "SELECT sku_id, shop_id, pk, name FROM sku WHERE in_use AND pk NOT IN "
         f"(SELECT sku_pk FROM price WHERE date = '{today}')"
     )
 
@@ -134,6 +158,21 @@ if __name__ == "__main__":
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options
         )
+        # Обменный курс на Aliexpress
+        sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
+        cursor.execute(sql_query)
+
+        if not cursor.rowcount:
+            exchange = get_price(
+                'https://aliexpress.ru/item/4000939906574.html?sku_id=10000011334711491',
+                is_float=True,
+            )
+            if exchange:
+                sql_query = (
+                    f"INSERT INTO exchange (date, price) VALUES ('{today}', {exchange})"
+                )
+                cursor.execute(sql_query)
+
         row_count = 0
         for row in data:
             if row_count != 0 and row_count != len(data):
@@ -154,7 +193,7 @@ if __name__ == "__main__":
 
     sql_query = "SELECT pk, name FROM sku WHERE in_use ORDER BY name"
     cursor.execute(sql_query)
-    sku_list = cursor.fetchall()
+    sku_data = cursor.fetchall()
 
     sql_query = (
         "SELECT date, price, sku_pk FROM price "
@@ -165,10 +204,13 @@ if __name__ == "__main__":
 
     sql_query = "SELECT sku_pk, MIN(price),MAX(price) FROM price GROUP BY sku_pk"
     cursor.execute(sql_query)
-    minmax_dict = {db_row[0]: (db_row[1], db_row[2]) for db_row in cursor.fetchall()}
-    print_report_table(sku_list, price_data, minmax_dict)
-    wait_command()
-    # import matplotlib.pyplot as plt
+    minmax_data = {db_row[0]: (db_row[1], db_row[2]) for db_row in cursor.fetchall()}
 
+    sql_query = f"SELECT date, price FROM exchange WHERE date > NOW() - INTERVAL 5 DAY ORDER BY date"
+    cursor.execute(sql_query)
+    exchange_data = cursor.fetchall()
+
+    print_report_table(sku_data, price_data, minmax_data, exchange_data)
+    # wait_command()
     cursor.close()
     connection.close()
