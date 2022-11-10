@@ -21,14 +21,17 @@ def make_url(sku_id, shop_id):
 
 def get_price(url, is_float=False):
     driver.get(url)
+
     if url != driver.current_url:
         logging.info(
             f'{time.strftime("%d-%m-%Y %H:%M:%S")}: '
             f"The product does not exist or the product is out of stock '{url}'."
         )
         return 0
+
     price = 0
     elements = driver.find_elements(By.CLASS_NAME, "product-price-current")
+
     if not elements:
         elements = driver.find_elements(
             By.CSS_SELECTOR, "[class*='Product_UniformBanner__uniformBannerBoxPrice__']"
@@ -41,22 +44,15 @@ def get_price(url, is_float=False):
     if elements:
         log_ = f"Found {len(elements)} elements: "
         for element in elements:
-            price_text = element.text
-            price_cut = price_text[: price_text.find(",")].replace(" ", "")
-            log_ += f"e.text: {element.text}, cut: {price_cut}, int: "
-            if price_cut.isdigit():
+            price_text = element.text[: element.text.find(",") + 3]
+            price_cut = price_text.replace(" ", "").replace(",", ".")
+            log_ += f'e.text: {element.text}, price_text: {price_text}, price_cut: {price_cut}, int/float: '
+            if price_cut.replace('.', '', 1).isdigit():
                 if is_float:
-                    price = round(
-                        float(
-                            price_text[: price_text.find(",") + 3]
-                            .replace(" ", "")
-                            .replace(",", ".")
-                        ),
-                        2,
-                    )
+                    price = round(float(price_cut), 2)
                 else:
-                    price = int(price_cut)
-                log_ += str(price)
+                    price = int(price_cut[:-3])
+                    log_ += str(price)
                 break
             else:
                 log_ += "none"
