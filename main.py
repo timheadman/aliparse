@@ -21,7 +21,7 @@ def make_url(sku_id, shop_id):
 
 def get_price(url, is_float=False):
     driver.get(url)
-
+    # ToDo: Убрать паразитное ожидание страницы
     if url != driver.current_url:
         logging.info(
             f'{time.strftime("%d-%m-%Y %H:%M:%S")}: '
@@ -100,6 +100,7 @@ def print_report_table(db_sku, db_price, db_minmax, db_exchange):
 
 
 def wait_command():
+    # ToDo: Сделать таймер ожидания команды
     while True:
         command = input("Enter command, help - for help, enter - for exit: ")
         com_list = command.split()
@@ -110,6 +111,7 @@ def wait_command():
             print(help.help_topic)
 
 
+# ToDo: Засечь время и проверить что тормозит вывод таблицы
 if __name__ == "__main__":
     logging.basicConfig(
         encoding="utf-8",
