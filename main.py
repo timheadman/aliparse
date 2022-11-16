@@ -15,6 +15,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import help
 
+WHITE_COLOR = '\033[38m'
+GREEN_COLOR = '\033[32m'
+RED_COLOR = '\033[31m'
+
 
 def make_url(sku_id, shop_id):
     return 'https://aliexpress.ru/item/' + str(shop_id) + '.html?sku_id=' + str(sku_id)
@@ -121,12 +125,12 @@ def print_report_table():
             for db_row in db_price:
                 if db_row[0] == date_ and db_row[2] == sku_id:
                     if db_row[1] <= db_minmax[sku_id][0]:
-                        price.append(f"\033[32m{db_row[1]}\033[38m")
+                        price.append(f"{GREEN_COLOR}{db_row[1]}{WHITE_COLOR}")
                     elif db_row[1] >= db_minmax[sku_id][1]:
-                        price.append(f"\033[31m{db_row[1]}\033[38m")
+                        price.append(f"{RED_COLOR}{db_row[1]}{WHITE_COLOR}")
                     else:
                         price.append(db_row[1])
-        price.append(f'\033[32m{db_minmax[sku_id][0]}\033[38m/\033[31m{db_minmax[sku_id][1]}\033[38m')
+        price.append(f'{GREEN_COLOR}{db_minmax[sku_id][0]}{WHITE_COLOR}/{RED_COLOR}{db_minmax[sku_id][1]}{WHITE_COLOR}')
         report_table.add_row(price)
 
     date_set.insert(0, "")
