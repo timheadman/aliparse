@@ -108,9 +108,9 @@ def print_report_table():
 
     price = ['*** Exchange USD/RUB ***']
     for date_ in date_set:
-        price.append(
-            "".join([str(db_row[1]) for db_row in db_exchange if db_row[0] == date_])
-        )
+        for db_row in db_exchange:
+            if db_row[0] == date_:
+                price.append(db_row[1])
     price.append('*')
     report_table.add_row(price)
 
@@ -121,10 +121,12 @@ def print_report_table():
             for db_row in db_price:
                 if db_row[0] == date_ and db_row[2] == sku_id:
                     if db_row[1] <= db_minmax[sku_id][0]:
-                        price.append(str(db_row[1]) + '*')
+                        price.append(f"\033[32m{db_row[1]}\033[38m")
+                    elif db_row[1] >= db_minmax[sku_id][1]:
+                        price.append(f"\033[31m{db_row[1]}\033[38m")
                     else:
                         price.append(db_row[1])
-        price.append(f'{db_minmax[sku_id][0]}/{db_minmax[sku_id][1]}')
+        price.append(f'\033[32m{db_minmax[sku_id][0]}\033[38m/\033[31m{db_minmax[sku_id][1]}\033[38m')
         report_table.add_row(price)
 
     date_set.insert(0, "")
