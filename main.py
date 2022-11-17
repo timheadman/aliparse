@@ -102,6 +102,7 @@ def print_report_table():
         f"WHERE date IN ({data_sql_in}) "
         "ORDER BY date"
     )
+    print(sql_query_)
     cursor.execute(sql_query_)
     db_exchange = cursor.fetchall()
 
@@ -118,19 +119,26 @@ def print_report_table():
     price.append('*')
     report_table.add_row(price)
 
-    # ToDo: Выбрать последние 5 существующих дат, а не 5 начиная с текущей
     for sku_id in name_id_dict.keys():
         price = [name_id_dict[sku_id]]
         for date_ in date_set:
+            price_string = ' '
             for db_row in db_price:
                 if db_row[0] == date_ and db_row[2] == sku_id:
                     if db_row[1] <= db_minmax[sku_id][0]:
-                        price.append(f"{GREEN_COLOR}{db_row[1]}{WHITE_COLOR}")
+                        price_string = f'{GREEN_COLOR}{db_row[1]}{WHITE_COLOR}'
                     elif db_row[1] >= db_minmax[sku_id][1]:
-                        price.append(f"{RED_COLOR}{db_row[1]}{WHITE_COLOR}")
+                        price_string = f'{RED_COLOR}{db_row[1]}{WHITE_COLOR}'
                     else:
-                        price.append(db_row[1])
-        price.append(f'{GREEN_COLOR}{db_minmax[sku_id][0]}{WHITE_COLOR}/{RED_COLOR}{db_minmax[sku_id][1]}{WHITE_COLOR}')
+                        price_string = str(db_row[1])
+                    break
+            price.append(price_string)
+        price.append(
+            f'{GREEN_COLOR}{db_minmax[sku_id][0]}{WHITE_COLOR}'
+            f'/{RED_COLOR}{db_minmax[sku_id][1]}{WHITE_COLOR}'
+        )
+        print(price)
+        # exit()
         report_table.add_row(price)
 
     date_set.insert(0, "")
