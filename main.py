@@ -15,7 +15,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import help
 
-WHITE_COLOR = '\033[38m'
+WHITE_COLOR = '\033[39m'
 GREEN_COLOR = '\033[32m'
 RED_COLOR = '\033[31m'
 
@@ -102,7 +102,6 @@ def print_report_table():
         f"WHERE date IN ({data_sql_in}) "
         "ORDER BY date"
     )
-    print(sql_query_)
     cursor.execute(sql_query_)
     db_exchange = cursor.fetchall()
 
@@ -137,8 +136,6 @@ def print_report_table():
             f'{GREEN_COLOR}{db_minmax[sku_id][0]}{WHITE_COLOR}'
             f'/{RED_COLOR}{db_minmax[sku_id][1]}{WHITE_COLOR}'
         )
-        print(price)
-        # exit()
         report_table.add_row(price)
 
     date_set.insert(0, "")
