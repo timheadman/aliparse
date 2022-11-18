@@ -138,7 +138,8 @@ def print_report_table():
         )
         report_table.add_row(price)
 
-    date_set.insert(0, "")
+    date_set.insert(0, "Title")
+    date_set[1] = "** 11.11 **"
     date_set.append("MIN/MAX")
     report_table.field_names = date_set
     print(report_table)
