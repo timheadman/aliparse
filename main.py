@@ -231,10 +231,11 @@ if __name__ == "__main__":
                     f"VALUES ({row[2]}, '{today}', {current_price})"
                 )
                 cursor.execute(sql_query)
+
         connection.commit()
         driver.close()  # ToDo: Возможно ли ускорить?
 
     print_report_table()
-    # wait_command()
+    wait_command()
     cursor.close()
     connection.close()
