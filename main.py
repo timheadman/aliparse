@@ -157,7 +157,6 @@ def wait_command():
             print(help.help_topic)
 
 
-# ToDo: Засечь время и проверить что тормозит вывод таблицы
 if __name__ == "__main__":
     logging.basicConfig(
         encoding="utf-8",
@@ -232,9 +231,8 @@ if __name__ == "__main__":
                     f"VALUES ({row[2]}, '{today}', {current_price})"
                 )
                 cursor.execute(sql_query)
-
         connection.commit()
-        driver.close()
+        driver.close() # ToDo: Возможно ли ускорить?
 
     print_report_table()
     # wait_command()
