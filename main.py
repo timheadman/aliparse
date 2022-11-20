@@ -26,7 +26,7 @@ def make_url(sku_id, shop_id):
 
 def get_price(url, is_float=False):
     driver.get(url)
-    # ToDo: Убрать паразитное ожидание страницы
+    # ToDo: Убрать паразитное ожидание загрузки всей страницы
     if url != driver.current_url:
         logging.info(
             f'{time.strftime("%d-%m-%Y %H:%M:%S")}: '
@@ -139,7 +139,7 @@ def print_report_table():
         report_table.add_row(price)
 
     date_set.insert(0, "Title")
-    date_set[1] = "** 11.11 **"
+    date_set[1] = '** ' + str(date_set[1].day) + '.' + str(date_set[1].month) + ' **'
     date_set.append("MIN/MAX")
     report_table.field_names = date_set
     print(report_table)
@@ -232,7 +232,7 @@ if __name__ == "__main__":
                 )
                 cursor.execute(sql_query)
         connection.commit()
-        driver.close() # ToDo: Возможно ли ускорить?
+        driver.close()  # ToDo: Возможно ли ускорить?
 
     print_report_table()
     # wait_command()
