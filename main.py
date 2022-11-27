@@ -32,27 +32,27 @@ def get_price(url, is_float=False):
     if url != driver.current_url:
         logging.info(
             f'{time.strftime("%d-%m-%Y %H:%M:%S")}: '
-            f"The product does not exist or the product is out of stock '{url}'."
+            f'The product does not exist or the product is out of stock "{url}".'
         )
         return 0
 
     price = 0
-    elements = driver.find_elements(By.CLASS_NAME, "product-price-current")
+    elements = driver.find_elements(By.CLASS_NAME, 'product-price-current')
 
     if not elements:
         elements = driver.find_elements(
-            By.CSS_SELECTOR, "[class*='Product_UniformBanner__uniformBannerBoxPrice__']"
+            By.CSS_SELECTOR, '[class*=\'Product_UniformBanner__uniformBannerBoxPrice__\']'
         )
     if not elements:
         elements = driver.find_elements(
-            By.CSS_SELECTOR, "[class*='snow-price_SnowPrice__mainS__']"
+            By.CSS_SELECTOR, '[class*=\'snow-price_SnowPrice__mainS__\']'
         )
 
     if elements:
-        log_ = f"Found {len(elements)} elements: "
+        log_ = f'Found {len(elements)} elements: '
         for element in elements:
-            price_text = element.text[: element.text.find(",") + 3]
-            price_cut = price_text.replace(" ", "").replace(",", ".")
+            price_text = element.text[: element.text.find(',') + 3]
+            price_cut = price_text.replace(' ', '').replace(',', '.')
             log_ += f'e.text: {element.text}, price_text: {price_text}, price_cut: {price_cut}, int/float: '
             if price_cut.replace('.', '', 1).isdigit():
                 if is_float:
@@ -64,7 +64,7 @@ def get_price(url, is_float=False):
             else:
                 log_ += "none"
     else:
-        log_ = "Elements not found ({url})"
+        log_ = 'Elements not found ({url})'
 
     logging.info(f'{time.strftime("%d-%m-%Y %H:%M:%S")}: {log_}, url: {url}')
     return price
@@ -91,18 +91,18 @@ def print_report_table():
 
     # Создаем таблицу цен в диапазоне дат
     sql_query_ = (
-        "SELECT date, price, sku_pk FROM price "
-        f"WHERE date IN ({data_sql_in}) "
-        "ORDER BY date"
+        'SELECT date, price, sku_pk FROM price '
+        f'WHERE date IN ({data_sql_in}) '
+        'ORDER BY date'
     )
     cursor.execute(sql_query_)
     db_price = cursor.fetchall()
 
     # Создаем таблицу курса USD/RUB в диапазоне дат
     sql_query_ = (
-        "SELECT date, price FROM exchange "
-        f"WHERE date IN ({data_sql_in}) "
-        "ORDER BY date"
+        'SELECT date, price FROM exchange '
+        f'WHERE date IN ({data_sql_in}) '
+        'ORDER BY date'
     )
     cursor.execute(sql_query_)
     db_exchange = cursor.fetchall()
@@ -142,9 +142,9 @@ def print_report_table():
         )
         report_table.add_row(price)
 
-    date_set.insert(0, "Title")
+    date_set.insert(0, 'Title')
     date_set[1] = '** ' + str(date_set[1].day) + '.' + str(date_set[1].month) + ' **'
-    date_set.append("MIN/MAX")
+    date_set.append('MIN/MAX')
     report_table.field_names = date_set
     print(report_table)
 
@@ -152,7 +152,7 @@ def print_report_table():
 def wait_command():
     # ToDo: Сделать таймер ожидания команды
     while True:
-        command = input("Enter command, help - for help, enter - for exit: ")
+        command = input('Enter command, help - for help, enter - for exit: ')
         com_list = command.split()
         print(com_list)
         if not len(com_list):
@@ -161,14 +161,14 @@ def wait_command():
             print(help.help_topic)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     logging.basicConfig(
-        encoding="utf-8",
+        encoding='utf-8',
         level=logging.INFO,
-        handlers=[logging.FileHandler("aliparse.log"), logging.StreamHandler()],
+        handlers=[logging.FileHandler('aliparse.log'), logging.StreamHandler()],
     )
 
-    today = time.strftime("%Y-%m-%d")
+    today = time.strftime('%Y-%m-%d')
     connection = None
     cursor = None
     try:
@@ -184,7 +184,7 @@ if __name__ == "__main__":
             f'{time.strftime("%d-%m-%Y %H:%M:%S")}: '
             f'Error connecting to MariaDB server: {e}.'
         )
-        sys.exit("Error connecting to MariaDB server.")
+        sys.exit('Error connecting to MariaDB server.')
 
     cursor = connection.cursor(buffered=True)
 
@@ -194,23 +194,22 @@ if __name__ == "__main__":
     )
 
     cursor.execute(sql_query)
-    logging.info(f"Recieve {cursor.rowcount} rows.")
+    logging.info(f'Receive {cursor.rowcount} rows.')
     data = cursor.fetchall()
 
     if len(data):
         options = webdriver.ChromeOptions()
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-        if platform == "linux" or platform == "linux2":
-            options.add_argument('--remote-debugging-port=9224') 
+        if platform == 'linux' or platform == 'linux2':
+            options.add_argument('--remote-debugging-port=9224')
             options.binary_location = '/snap/bin/brave'
-        elif platform == "darwin":
-            pass  # OS X
-        elif platform == "win32":
+        elif platform == 'win32':
             options.binary_location = (
-                "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+                'C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe'
             )
-
+        elif platform == 'darwin':
+            pass  # OS X
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options
         )
@@ -226,7 +225,7 @@ if __name__ == "__main__":
             )
             if exchange:
                 sql_query = (
-                    f"INSERT INTO exchange (date, price) VALUES ('{today}', {exchange})"
+                    f'INSERT INTO exchange (date, price) VALUES (\'{today}\', {exchange})'
                 )
                 cursor.execute(sql_query)
 
@@ -234,7 +233,7 @@ if __name__ == "__main__":
         for row in data:
             if row_count != 0 and row_count != len(data):
                 rnd_int = random.randint(2, 10)
-                logging.info(f"Random sleep: {rnd_int} sec...")
+                logging.info(f'Random sleep: {rnd_int} sec...')
                 time.sleep(rnd_int)
             row_count += 1
             current_price = get_price(make_url(row[0], row[1]))
