@@ -4,6 +4,7 @@ import random
 import sys
 import time
 from secrets import *
+from sys import platform
 
 import mysql.connector as mariadb
 from mysql.connector import Error
@@ -199,14 +200,21 @@ if __name__ == "__main__":
     if len(data):
         options = webdriver.ChromeOptions()
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        options.add_argument('--remote-debugging-port=9224')  # LINUX
-        options.binary_location = (
-            # "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
-            '/snap/bin/brave'  # LINUX
-        )
+
+        if platform == "linux" or platform == "linux2":
+            options.add_argument('--remote-debugging-port=9224')  # LINUX
+            options.binary_location = '/snap/bin/brave'
+        elif platform == "darwin":
+            pass  # OS X
+        elif platform == "win32":
+            options.binary_location = (
+                "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+            )
+
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options
         )
+
         # Обменный курс на Aliexpress
         sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
         cursor.execute(sql_query)
