@@ -15,9 +15,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import help
 
-WHITE_COLOR = '\033[39m'
+WHITE_COLOR = '\033[39m\033[0m'
 GREEN_COLOR = '\033[32m'
 RED_COLOR = '\033[31m'
+YELLOW_COLOR = '\033[33m'
 
 
 def make_url(sku_id, shop_id):
@@ -128,6 +129,8 @@ def print_report_table():
                         price_string = f'{GREEN_COLOR}{db_row[1]}{WHITE_COLOR}'
                     elif db_row[1] >= db_minmax[sku_id][1]:
                         price_string = f'{RED_COLOR}{db_row[1]}{WHITE_COLOR}'
+                    elif db_row[1] <= db_minmax[sku_id][0] * 1.05:
+                        price_string = f'{YELLOW_COLOR}{db_row[1]}{WHITE_COLOR}'
                     else:
                         price_string = str(db_row[1])
                     break
@@ -196,8 +199,10 @@ if __name__ == "__main__":
     if len(data):
         options = webdriver.ChromeOptions()
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        options.add_argument('--remote-debugging-port=9224')  # LINUX
         options.binary_location = (
-            "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+            # "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+            '/snap/bin/brave'  # LINUX
         )
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options
