@@ -202,7 +202,7 @@ if __name__ == "__main__":
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
         if platform == "linux" or platform == "linux2":
-            options.add_argument('--remote-debugging-port=9224')  # LINUX
+            options.add_argument('--remote-debugging-port=9224') 
             options.binary_location = '/snap/bin/brave'
         elif platform == "darwin":
             pass  # OS X
