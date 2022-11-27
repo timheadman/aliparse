@@ -4,6 +4,7 @@ import random
 import sys
 import time
 from secrets import *
+from sys import platform
 
 import mysql.connector as mariadb
 from mysql.connector import Error
@@ -15,9 +16,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 import help
 
-WHITE_COLOR = '\033[39m'
+WHITE_COLOR = '\033[39m\033[0m'
 GREEN_COLOR = '\033[32m'
 RED_COLOR = '\033[31m'
+YELLOW_COLOR = '\033[33m'
 
 
 def make_url(sku_id, shop_id):
@@ -128,6 +130,8 @@ def print_report_table():
                         price_string = f'{GREEN_COLOR}{db_row[1]}{WHITE_COLOR}'
                     elif db_row[1] >= db_minmax[sku_id][1]:
                         price_string = f'{RED_COLOR}{db_row[1]}{WHITE_COLOR}'
+                    elif db_row[1] <= db_minmax[sku_id][0] * 1.05:
+                        price_string = f'{YELLOW_COLOR}{db_row[1]}{WHITE_COLOR}'
                     else:
                         price_string = str(db_row[1])
                     break
@@ -196,12 +200,21 @@ if __name__ == "__main__":
     if len(data):
         options = webdriver.ChromeOptions()
         options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        options.binary_location = (
-            "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
-        )
+
+        if platform == "linux" or platform == "linux2":
+            options.add_argument('--remote-debugging-port=9224')  # LINUX
+            options.binary_location = '/snap/bin/brave'
+        elif platform == "darwin":
+            pass  # OS X
+        elif platform == "win32":
+            options.binary_location = (
+                "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+            )
+
         driver = webdriver.Chrome(
             service=Service(ChromeDriverManager().install()), options=options
         )
+
         # Обменный курс на Aliexpress
         sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
         cursor.execute(sql_query)
