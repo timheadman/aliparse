@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Name=Aliparse Script
+Comment=Aliparse Script
+Exec=/home/tim/Projects/aliparse/aliparse.sh
+Icon=/home/tim/Projects/aliparse/aliparse.png
+Terminal=true
+Type=Application
