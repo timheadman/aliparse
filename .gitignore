@@ -1,4 +1,5 @@
 secrets.*
+chromedriver
 
 # OSX
 .DS_Store
