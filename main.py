@@ -3,6 +3,9 @@ import logging
 import random
 import sys
 import time
+
+from webdriver_manager.core.utils import ChromeType
+
 from secrets import *
 from sys import platform
 
@@ -210,10 +213,10 @@ if __name__ == '__main__':
             )
         elif platform == 'darwin':
             pass  # OS X
-        driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=options
-        )
-
+        # driver = webdriver.Chrome(
+        #     service=Service(ChromeDriverManager(chrome_type=ChromeType.BRAVE).install()), options=options
+        # )
+        driver = webdriver.Chrome(executable_path='/home/tim/projects/aliparse/chromedriver', options=options)
         # Обменный курс на Aliexpress
         sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
         cursor.execute(sql_query)

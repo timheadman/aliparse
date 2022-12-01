@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd /home/tim/Projects/aliparse
+cd /home/tim/projects/aliparse
 source venv/bin/activate
 python3 main.py
