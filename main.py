@@ -202,6 +202,9 @@ if __name__ == '__main__':
 
     if len(data):
         options = webdriver.ChromeOptions()
+        options.add_argument("--no-sandbox")
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         if platform == 'linux' or platform == 'linux2':
@@ -213,10 +216,9 @@ if __name__ == '__main__':
             )
         elif platform == 'darwin':
             pass  # OS X
-        # driver = webdriver.Chrome(
-        #     service=Service(ChromeDriverManager(chrome_type=ChromeType.BRAVE).install()), options=options
-        # )
-        driver = webdriver.Chrome(executable_path='/home/tim/projects/aliparse/chromedriver', options=options)
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager(chrome_type=ChromeType.BRAVE).install()), options=options
+        )
         # Обменный курс на Aliexpress
         sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
         cursor.execute(sql_query)
