@@ -3,11 +3,7 @@ import logging
 import random
 import sys
 import time
-
-from webdriver_manager.core.utils import ChromeType
-
 from secrets import *
-from sys import platform
 
 import mysql.connector as mariadb
 from mysql.connector import Error
@@ -44,7 +40,8 @@ def get_price(url, is_float=False):
 
     if not elements:
         elements = driver.find_elements(
-            By.CSS_SELECTOR, '[class*=\'Product_UniformBanner__uniformBannerBoxPrice__\']'
+            By.CSS_SELECTOR,
+            '[class*=\'Product_UniformBanner__uniformBannerBoxPrice__\']',
         )
     if not elements:
         elements = driver.find_elements(
@@ -220,9 +217,7 @@ if __name__ == '__main__':
                 is_float=True,
             )
             if exchange:
-                sql_query = (
-                    f'INSERT INTO exchange (date, price) VALUES (\'{today}\', {exchange})'
-                )
+                sql_query = f'INSERT INTO exchange (date, price) VALUES (\'{today}\', {exchange})'
                 cursor.execute(sql_query)
 
         row_count = 0
