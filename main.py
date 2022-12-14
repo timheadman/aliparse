@@ -13,7 +13,7 @@ import mysql.connector as mariadb
 from mysql.connector import Error
 from prettytable import PrettyTable
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -207,17 +207,8 @@ if __name__ == '__main__':
         options.add_argument('--disable-gpu')
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
-        if platform == 'linux' or platform == 'linux2':
-            options.add_argument('--remote-debugging-port=9224')
-            options.binary_location = '/snap/bin/brave'
-        elif platform == 'win32':
-            options.binary_location = (
-                'C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe'
-            )
-        elif platform == 'darwin':
-            pass  # OS X
         driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager(chrome_type=ChromeType.BRAVE).install()), options=options
+            service=ChromeService(ChromeDriverManager().install()), options=options
         )
         # Обменный курс на Aliexpress
         sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
