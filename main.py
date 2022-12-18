@@ -36,6 +36,7 @@ def get_price(url, is_float=False):
         return 0
 
     price = 0
+    print(driver)
     elements = driver.find_elements(By.CLASS_NAME, 'product-price-current')
 
     if not elements:
@@ -200,7 +201,7 @@ if __name__ == '__main__':
     if len(data):
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
-        options.add_argument('--headless')
+        # options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
@@ -234,7 +235,7 @@ if __name__ == '__main__':
                     f"VALUES ({row[2]}, '{today}', {current_price})"
                 )
                 cursor.execute(sql_query)
-
+        time.sleep(10)
         connection.commit()
         driver.close()  # ToDo: Возможно ли ускорить?
 
