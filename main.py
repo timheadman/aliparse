@@ -80,13 +80,9 @@ def print_report_table():
     name_id_dict = dict(cursor.fetchall())  # Словарь sku_id -> name
 
     # Формирование списка 5 дат для вывода
-    sql_query_ = (
-        'SELECT date FROM exchange '
-        'WHERE date > (SELECT max(date) FROM exchange) - INTERVAL 5 DAY '
-        'ORDER BY date'
-    )
+    sql_query_ = 'SELECT date FROM exchange ORDER BY date DESC LIMIT 5'
     cursor.execute(sql_query_)
-    date_set = [item[0] for item in cursor.fetchall()]
+    date_set = sorted([item[0] for item in cursor.fetchall()])
     date_set[0] = datetime.date(2022, 11, 12)
     data_sql_in = '\'' + '\', \''.join([str(data_) for data_ in date_set]) + '\''
 
