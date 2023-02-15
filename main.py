@@ -214,7 +214,7 @@ if __name__ == '__main__':
 
         if not cursor.rowcount:
             exchange = get_price(
-                'https://aliexpress.ru/item/4000939906574.html?sku_id=10000011334711491',
+                'https://aliexpress.ru/item/4000989870531.html?sku_id=10000013206512605',
                 is_float=True,
             )
             if exchange:
