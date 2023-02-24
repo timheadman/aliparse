@@ -200,14 +200,16 @@ if __name__ == '__main__':
         # options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
+        # DOM access is ready, but other resources like images may still be loading
+        options.page_load_strategy = 'normal'
 
         driver = webdriver.Chrome(
-            service=ChromeService(ChromeDriverManager().install()), options=options
-        )
+            service=ChromeService(ChromeDriverManager().install()), options=options)
         # Обменный курс на Aliexpress
         sql_query = f"SELECT price FROM exchange WHERE date='{today}'"
         cursor.execute(sql_query)
 
+        # Необходимо несколько адресов, хранение в базе, проверка валидности
         if not cursor.rowcount:
             exchange = get_price(
                 'https://aliexpress.ru/item/4000989870531.html?sku_id=10000013206512605',
@@ -220,7 +222,7 @@ if __name__ == '__main__':
         row_count = 0
         for row in data:
             if row_count != 0 and row_count != len(data):
-                rnd_int = random.randint(2, 10)
+                rnd_int = random.randint(0, 3)
                 logging.info(f'Random sleep: {rnd_int} sec...')
                 time.sleep(rnd_int)
             row_count += 1
